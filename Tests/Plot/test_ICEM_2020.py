@@ -261,9 +261,10 @@ def test_MachineUD():
     lam4.winding.init_as_CW2LT()
     # Machine definition
     machine.lam_list = [lam1, lam2, lam3, lam4]
+    machine.shaft = Shaft(Drsh=lam4.Rint * 2)
 
     # Plot, check and save
-    machine.plot(is_show_fig=False)
+    machine.plot(is_show_fig=False, is_clean_plot=True)
     fig = plt.gcf()
     fig.savefig(join(save_path, "fig_12_MachineUD.png"))
     fig.savefig(join(save_path, "fig_12_MachineUD.svg"), format="svg")
@@ -272,7 +273,7 @@ def test_MachineUD():
     machine.frame = None
     machine.name = None
 
-    machine.plot(is_show_fig=False)
+    machine.plot(is_show_fig=False, is_clean_plot=True)
     fig = plt.gcf()
     fig.savefig(join(save_path, "fig_12_MachineUD_no_frame_no_name.png"))
     fig.savefig(join(save_path, "fig_12_MachineUD_no_frame_no_name.svg"), format="svg")
@@ -310,7 +311,7 @@ def test_SlotMulti_rotor():
     rotor.notch = [notch]
 
     # Plot, check and save
-    rotor.plot(is_show_fig=False)
+    rotor.plot(is_show_fig=False, is_clean_plot=True, edgecolor="k")
     fig = plt.gcf()
     fig.savefig(join(save_path, "fig_13_LamSlotMulti_rotor.png"))
     fig.savefig(join(save_path, "fig_13_LamSlotMulti_rotor.svg"), format="svg")
@@ -348,7 +349,7 @@ def test_SlotMulti_stator():
     stator.notch = [notch]
 
     # Plot, check and save
-    stator.plot(is_show_fig=False)
+    stator.plot(is_show_fig=False, is_clean_plot=True)
     fig = plt.gcf()
     fig.savefig(join(save_path, "fig_13_LamSlotMulti_stator.png"))
     fig.savefig(join(save_path, "fig_13_LamSlotMulti_stator.svg"), format="svg")
@@ -403,7 +404,7 @@ def test_SlotUD():
     machine.rotor.slot.set_from_point_list(is_sym=True, point_list=point_list)
 
     # Plot, check and save
-    machine.plot(is_show_fig=False)
+    machine.plot(is_show_fig=False, is_clean_plot=True)
     fig = plt.gcf()
     assert len(fig.axes[0].patches) == 83
     fig.savefig(join(save_path, "fig_14_SlotUD.png"))
@@ -422,7 +423,7 @@ def test_WindingUD():
         Rint=0.2, Rext=0.5, is_internal=True, is_stator=False, L1=0.9, Nrvd=2, Wrvd=0.05
     )
     machine.rotor.axial_vent = [
-        VentilationPolar(Zh=6, Alpha0=pi / 6, W1=pi / 6, D0=100e-3, H0=0.3)
+        VentilationPolar(Zh=6, Alpha0=0, W1=pi / 6, D0=100e-3, H0=0.3)
     ]
     machine.rotor.slot = SlotW12(Zs=6, R2=35e-3, H0=20e-3, R1=17e-3, H1=130e-3)
     machine.rotor.winding = WindingUD(wind_mat=wind_mat, qs=4, p=4, Lewout=60e-3)
@@ -462,7 +463,7 @@ def test_WindingUD_layer():
     rotor = LamSlotWind(
         Rint=0.2, Rext=0.5, is_internal=True, is_stator=False, L1=0.9, Nrvd=2, Wrvd=0.05
     )
-    rotor.axial_vent = [VentilationCirc(Zh=6, Alpha0=pi / 6, D0=100e-3, H0=0.3)]
+    rotor.axial_vent = [VentilationCirc(Zh=6, Alpha0=0, D0=100e-3, H0=0.3)]
     rotor.slot = SlotW11(
         Zs=6, H0=15e-3, W0=60e-3, W1=100e-3, W2=100e-3, H1=20e-3, H2=200e-3
     )
@@ -485,14 +486,14 @@ def test_WindingUD_layer():
     rotor = load(join(save_path, "Fig17_rotor_wind_layer.json"))
 
     # Plot, check and save
-    rotor.plot(is_show_fig=False)
+    rotor.plot(is_show_fig=False, is_clean_plot=True,edgecolor="k")
     fig = plt.gcf()
     fig.savefig(join(save_path, "fig_17_WindingUD_layer.png"))
     fig.savefig(join(save_path, "fig_17_WindingUD_layer.svg"), format="svg")
     assert len(fig.axes[0].patches) == 32
 
 
-def test_BoreFlower():
+def test_BoreFlower(is_show_fig=False):
     """Figure 18: LamHole with uneven bore shape
     From pyleecan/Tests/Plot/LamHole/test_Hole_50_plot.py
     """
@@ -522,14 +523,19 @@ def test_BoreFlower():
     rotor.hole[0].magnet_1 = None
     # Rotor bore shape
     rotor.bore = BoreFlower(N=8, Rarc=0.05, alpha=pi / 8)
+    rotor.yoke = BoreFlower(N=8, Rarc=0.05 / 4, alpha=pi / 8)
 
     # Plot, check and save
-    rotor.plot(is_show_fig=False)
-    fig = plt.gcf()
+    fig, _ = rotor.plot(is_show_fig=is_show_fig)
     fig.savefig(join(save_path, "fig_18_BoreFlower.png"))
     fig.savefig(join(save_path, "fig_18_BoreFlower.svg"), format="svg")
     # 2 for lam + 3*8 for holes + 16 vents
     assert len(fig.axes[0].patches) == 42
+    fig, _ = rotor.plot(is_show_fig=is_show_fig, sym=8)
+    fig.savefig(join(save_path, "fig_18_BoreFlower_sym.png"))
+    fig.savefig(join(save_path, "fig_18_BoreFlower_sym.svg"), format="svg")
+    # 1 for lam + 3*1 for holes + 3 vents
+    assert len(fig.axes[0].patches) == 7
 
 
 @pytest.mark.SPMSM
@@ -844,7 +850,9 @@ def test_Optimization_problem():
 
 
 if __name__ == "__main__":
+    test_WindingUD_layer()
     # test_FEMM_sym()
     # test_WindingUD()
-    test_ecc_FEMM()
+    # test_ecc_FEMM()
     # test_WindingUD_layer()
+    print("Done")

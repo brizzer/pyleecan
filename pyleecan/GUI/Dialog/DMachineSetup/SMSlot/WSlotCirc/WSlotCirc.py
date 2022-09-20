@@ -43,15 +43,15 @@ class WSlotCirc(Gen_WSlotCirc, QWidget):
         self.slot = lamination.slot
 
         # Selecting the right image
-        if self.lamination.is_stator:
-            # Use schematics on the stator without magnet
+        if not self.lamination.is_internal:
+            # Use schematics on the external without magnet
             self.img_slot.setPixmap(
                 QPixmap(
                     u":/images/images/MachineSetup/WMSlot/SlotCirc_empty_ext_sta.png"
                 )
             )
         else:
-            # Use schematics on the rotor without magnet
+            # Use schematics on the inner without magnet
             self.img_slot.setPixmap(
                 QPixmap(
                     u":/images/images/MachineSetup/WMSlot/SlotCirc_empty_int_rot.png"
@@ -102,7 +102,8 @@ class WSlotCirc(Gen_WSlotCirc, QWidget):
             A SlotCirc object
         """
         self.slot.H0 = self.lf_H0.value()
-        self.w_out.comp_output()
+        if self.check(self.lamination) is None:
+            self.w_out.comp_output()
         # Notify the machine GUI that the machine has changed
         self.saveNeeded.emit()
 
@@ -126,6 +127,10 @@ class WSlotCirc(Gen_WSlotCirc, QWidget):
             return "You must set W0 !"
         elif lam.slot.H0 is None:
             return "You must set H0 !"
+        elif lam.slot.W0 <= 0:
+            return "W0 must be higher than 0"
+        elif lam.slot.H0 <= 0:
+            return "H0 must be higher than 0"
 
         # Constraints
         try:
